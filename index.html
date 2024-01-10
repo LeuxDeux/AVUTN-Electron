@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electron App</title>
+</head>
+<body>
+  <img id="qrCode" src="out.png" alt="QR Code">
+  <button onclick="startApp()">Start App</button>
+  <button onclick="stopApp()">Stop App</button>
+  <script src="index.js"></script>
+  <script>
+    //funcion que cada 3s recarga la imagen 
+    function reloadImage() {
+      const timestamp = Date.now();
+      document.getElementById('qrCode').src = `out.png?timestamp=${timestamp}`;
+    }
+    setInterval(reloadImage, 3000);
+  </script>
+</body>
+</html>

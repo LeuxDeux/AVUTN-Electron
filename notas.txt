@@ -1,0 +1,160 @@
+Aplicación main: "app.js", es la que se debe ejecutar (node app.js), para iniciar la conexion hacia whatsapp.
+app.js:
+    módulos(require):
+        uuid - identificadores unicos
+        venom - integracion wssp
+        dialogflow - integracion dialogflow
+        mysql2 - manejo de base de datos mysql
+        responseMappings - archivo de modificacion de respuestas
+        fs(opcional) - file system, para trabajar con archivos del sistema op
+
+    const normales:
+        sessionIds - objeto Map, donde se almacenan pares (clave-valor), numero tel(key) - sesiones/ids(value)
+        dbConfig - credenciales para acceder base de datos
+
+    funciones principales:
+        findCustomResponse() - busca respuestas personalizadas en modulo "responseMappings"
+        start() - llamada al iniciarse sesion en wssp con exito, manejador de eventos para mensajes entrantes, asociador de numeros de remitentes con sesiones, envia mensaje a dialogflow para procesarlo, obtiene respuesta, recorre cada una y modifica en caso de ser necesario, llama a sendMessageToWhatsApp para enviar las respuestas al remitente.
+        sendMessageToWhatsApp() - toma mensaje entrante y respuesta de dialogflow que será enviada, incluye bloque .then .catch para manejo de errores.
+        async setSessionAndUser() - asocia numero de telefono con una sesion, imprime numero por consola y maneja errores, usa promesa para esperar a que se completen procesos para lograr una ejecucion mas limpia
+        async insertarNumeroTelefono() (opcional) - inserta datos en tabla y archivo .txt (numeros de telefono solamente)
+
+    palabras, metodos recursos de codificacion:
+        require: carga modulos o archivos en una aplicacion, puede ser local o externamente en entornos de NODEJS.
+        .create(): funcion declarada dentro del objeto importado venom-bot.
+        => (arrow function/funcion flecha): forma mas resumida de escribir funciones anonimas, muy utilizada cuando se espera que la funcion sea enviada como argumento a otra funcion.
+        ejemplo práctico:
+        f normal -> function sumar(a, b) { return a + b};
+        f arrow -> const sumar = (a, b) => a + b;
+        console.log(sumar(2, 2));
+        .then() - .catch(): metodos utilizados al existir promesas para el manejo de resultados exitosos y errores, fundamentales en el codigo asincrono y promesas.
+        .then() -> exito, recibe una funcion de retorno cuando se resuelve la promesa, posibilidad de encadenarse
+        .catch() -> errores, cuando ocurren durante la ejecucion de una promesa, recibe una funcion retorno cuando la promesa es rechazada suele encadenarse con .then()
+        .then/catch para codigo basado en promesas, try-catch para bloques de codigo sincrono.
+        .find(): metodo de arrays que lee cada elemento hasta que encuentre uno con el que pueda devolver "true".
+        .startsWith(): metodo de strings que verifica si una cadena comienza con ciertos caracteres.
+        .onMessage(): metodo "escuchador"/"listener", cuando se reciba un nuevo mensaje, se ejecutará la funcion en sus parametros.
+        .get(): "obtenedor", de datos en un contexto, metodo común.
+        async - await: caracteristicas de codificacion asincrona
+        async: ej-> "async function Saludo()", siempre devolverá una promesa, incluso si no existe un "return", permite el uso de "await"
+        await: solo se puede usar dentro de funciones marcadas como "async", pausa la ejecucion de la funcion hasta que la promesa es resuelta, y devuelve resultado de la promesa.
+        .sendText(): metodo que envia un mensaje de texto al remitente especificado en su parametro.
+        resolve-reject: resolve para operacion asincronica exitosa y que cumpla la promesa con algun valor especifico, reject para rechazarla con un error.
+        .has(): utilizado en mapeo, para verificar si un "key" existe en ese contexto.
+        .set(): utilizado en mapeo, sirve para añadir o actualizar "key-value".
+        .replace(): en contexto de Strings -> .replace(antiguo, nuevo);
+
+        Contexto de MYSQL:
+            .createConnection(): crea nueva conexion a base de datos.
+            .execute(): ejecutar consultas SQL.
+            .end(): cierre de conexion en base de datos.
+
+        Contexto de FS(File system):
+            .readFileSync(): lee contenido de archivo ('.txt', 'utf-8').
+            .includes(): metodo de strings y arrays, verifica si una cadena de texto contiene otra cadena en el caso usado.
+            .appendFileSync(): agrega datos al final de un archivo, (ruta, datos, utf-8)
+
+dialogflow.js archivo que interactua con el servicio de google dialogflow:
+    modulos(require):
+        dialogflow
+        config: archivo .js exportado que contiene credenciales para conexion con google cloud.
+    funciones:
+        sendToDialogflow(): toma parametros relevantes, los almacena y captura errores, para luego mostrarlos por consola
+        a su vez se comunica con dialogflow donde envia solicitudes y espera respuestas que se almacenaran
+    metodos:
+        .SessionsClient(): nueva instancia sessionsclient de la biblioteca dialogflow, el objeto representa un "cliente" con el que se pueda interactuar
+        .sessionPath(): funcion que toma id del proyecto y de la sesion 
+        .detectIntent(): metodo de SessionsClient que envia solicitud de deteccion de "INTENTS" en un mensaje de una sesion de dialogflow, el objeto "request" que se le pasa como parametro contiene la informacion para la deteccion.
+        .forEach(): metodo de iteracion sobre c/ elemento de un array.
+        .push(): agrega elementos al final de un array.
+        .stringify(): en este caso "console.log(JSON.stringify(result,null," "));", convierte un objeto js en cadena JSON, imprime de forma "legible" un objeto en la consola.
+
+responseMappings.js archivo de mapeo exportado para personalizar respuestas, no hace falta hacerlo en un archivo aparte, pero al ser trabajado con cadenas de texto ocuparía espacio innecesario en la aplicacion principal,
+contiene la cadena de respuesta "original" recortada lo suficiente como para que el metodo .startsWith(), deba recorrer la menor cantidad de caracteres posibles,
+contiene la cadena de respuesta "custom" que en caso de que detecte un "original" devolverá la declarada en "custom",
+podría usarse con variables y un distinto indice al recorrer arrays trabajando con la integración de dialogflow agregando respuestas extras en las inteciones de Dialogflow.
+
+config.js archivo .js de credenciales necesarias para la interaccion con google cloud, no debe ser público
+
+numeros_telefono.txt archivo de texto donde se guardaran los mismos, sirve como una prueba para extraer datos y guardarlos en una base de datos, podría trabajarse la base de datos directamente en el entorno de Dialogflow.
+
+notas.txt este mismo archivo, todas las anotaciones necesarias para comprender el codigo, las funciones, metodos utilizados y que bibliotecas hay incorporadas
+
+carpeta node_modules contiene todos los modulos agregados al instalar el entorno de NODEJS.
+
+carpeta tokens contiene archivos binarios de codigo de acceso generados por la biblioteca venom-bot.
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Para el uso del bot en la página web se hizo una pagina de prueba con una estructura similar a la de la UTN donde se pensó agregar el agente virtual, para la incorporación del bot en la misma existen dos maneras,
+la más tecnica consiste en un enlace que devuelve un iframe donde se puede probarlo en una pagina del servicio del google cloud y agregarlo a tu pagina local, la otra opcion es basicamente lo mismo pero ya viene con una etiqueta html con un script de bootstrap para algunos apartados de diseño, insertar el bot solo consta de:
+<script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+        <df-messenger
+            intent="" //La parte intent refiere a que es lo que dirá el bot ni bien cargue la página, solo hay que poner el nombre de alguna intencion por ejemplo "WELCOME", se le ha sacado puesto que para entrenarlo y revisar el historial de conversacion era muy engorroso que cada vez que se cargaba la página nos figure una interaccion nueva.
+            chat-title="Asistente UTN "
+            agent-id="c82bc5b0-5ab8-47f1-b26b-3d594eee6da2"
+            language-code="es"
+            chat-icon="img/LogoUTN copy.png">
+        </df-messenger>
+
+        <style type="text/css"> // Dialogflow Documentation tiene algunas etiquetas que pueden ser modificadas para hacer el widget mas personalizable aunque no son muchas.
+            df-messenger {
+                --df-messenger-button-titlebar-color: #127cc1;
+            }
+        </style>
+
+        //// Luego se ha hecho un script usando jquery para almacenar algunos valores en una funcion escuchadora para poder ajustar el y hacer ligeramente "responsive" el widget
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            window.addEventListener('dfMessengerLoaded', function (event) {
+                var $r1 = document.querySelector("df-messenger");
+                var $r2 = $r1.shadowRoot.querySelector("df-messenger-chat");
+                var $r3 = $r2.shadowRoot.querySelector("df-messenger-user-input");
+                
+                adjustChatHeight(); // Llamada inicial para ajustar la altura según la resolución actual
+
+                function adjustChatHeight() {
+                    var windowHeight = window.innerHeight;
+                    var chatHeight = calculateChatHeight(windowHeight);
+                    
+                    var sheet = new CSSStyleSheet;
+                    sheet.replaceSync(`div.chat-wrapper[opened="true"] { height: ${chatHeight}px }`);
+                    $r2.shadowRoot.adoptedStyleSheets = [sheet];
+                }
+                // Función para calcular la altura del chat según la altura de la ventana
+                function calculateChatHeight(windowHeight) {
+                    // Puedes personalizar esta lógica según tus preferencias
+                    if (windowHeight < 768) {
+                        return 450; 
+                    } else if (windowHeight < 1080) {
+                        return 600;
+                    } else {
+                        return 650;
+                    }
+                }
+                window.addEventListener('resize', function() {
+                    adjustChatHeight();
+                });
+            });
+        });
+    </script>
+
+    Basicamente la integracion del bot en la página web consta de 1 etiqueta html y un script de bootstrap para su diseño, y en cuanto a lo responsive se usa un script js/jquery con 3 funciones,
+    con el script de boostrap y la etiqueta html el bot puede ser agregado a cualquier página y probado de manera local o en un hosting.
+    Para ir armando una pagina a modo de prueba semejante a la oficial de la UTN Reconquista lo armamos desde un repositorio de github: https://joarome123.github.io/PagUTNFinal/
+
+    Tener en cuenta que la carpeta de este proyecto puede verse muy pesada por la cantidad de modulos de nodejs que se agregaron, los que no sean usados pueden ser eliminados para optimizar el espacio.
+    
+    Para la correcta ejecucion de la aplicacion ya que es "portable", mientras se tenga nodejs en el sistema, se deberia eliminar algunas lineas
+    de mysql en la app.js ya que esta trabajando con una base de datos "personal" y puede ser adaptada o eliminada las lineas donde se llame a funciones o se citen partes.
+    lineas 10 a 16,
+    linea 67,
+    lineas 73 a 109.
+    Por cualquier incoveniente con el traspaso de modulos pueden instalarse de forma manual en la consola node con:
+    "npm install uuid venom-bot dialogflow mysql2"
+
+    //cd C:/Users/lauti/OneDrive/Escritorio/AgenteVirtualUTN-master
+start cmd /k node app.js
+chcp 65001 para configurar salida de consola utf-8 y entender los caracteres especiales
