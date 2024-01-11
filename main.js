@@ -69,3 +69,36 @@ ipcMain.on('stop-app', () => {
     }
     
   });
+  //////Prueba remitentes.html
+  /*let remitentesWindow;
+
+  function createRemitentesWindow() {
+    remitentesWindow = new BrowserWindow({
+      width: 600,
+      height: 400,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    });
+
+    remitentesWindow.loadFile('remitentes.html');
+    remitentesWindow.on('closed', function () {
+      remitentesWindow = null;
+    });
+  }
+  ipcMain.on('open-remitentes-window', () => {
+    if (!remitentesWindow) {
+      createRemitentesWindow();
+    }
+  });
+  ipcMain.on('close-remitentes-window', () => {
+    if (remitentesWindow) {
+      remitentesWindow.close();
+    }
+  });
+  ipcMain.on('update-remitentes', (event, formattedSenderId) => {
+    if (remitentesWindow) {
+      remitentesWindow.webContents.send('update-remitentes', formattedSenderId);
+    }
+  });*/

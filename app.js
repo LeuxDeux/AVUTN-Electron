@@ -98,7 +98,9 @@ function sendMessageToWhatsapp(client, message, response) { // cliente whatsapp 
 //asocia un num tel de remitente con una sesion generada mediante uuid.v1(), verifica si ya existe una sesion para el remitente y la crea si no existe
 async function setSessionAndUser(senderId) {
     try {
-        console.log(`\x1b[35m`, 'Mensaje Entrante: ', senderId.replace(/@c\.us$/, "")); //imprime por la consola el numero de la persona que envió un mensaje al cliente, x1b[35m para cambiar el color en la consola, .replace para quitar caracteres innecesarios en la devolucion por consola.
+        const formattedSenderId = senderId.replace(/@c\.us$/, "")
+        console.log('\x1b[35m', 'Mensaje Entrante: ', formattedSenderId);
+        //console.log(`\x1b[35m`, 'Mensaje Entrante: ', senderId.replace(/@c\.us$/, "")); //imprime por la consola el numero de la persona que envió un mensaje al cliente, x1b[35m para cambiar el color en la consola, .replace para quitar caracteres innecesarios en la devolucion por consola.
         if (!sessionIds.has(senderId)) { //verifica si existe sesion, sino la crea.
             sessionIds.set(senderId, uuid.v1());
            //await insertarNumeroTelefono(senderId.replace(/@c\.us$/, "")); // linea de codigo de prueba para insercion de senderId (numero tel), en tanto una tabla mysql como en un .txt alojado en la carpeta de la aplicacion

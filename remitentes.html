@@ -1,0 +1,34 @@
+<!-- Remitentes.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remitentes</title>
+</head>
+<body>
+  <h1>Lista de Remitentes</h1>
+  <button id="goToIndex">Volver a Principal</button>
+  <p id="remitentes-number">Número de Teléfono: </p>
+
+  <!-- Agrega cualquier otro contenido necesario aquí -->
+
+  <script>
+    // Importa el módulo ipcRenderer
+    const { ipcRenderer } = require("electron");
+    // Maneja eventos de actualización de remitentes
+    const remitentesNumber = document.getElementById('remitentes-number');
+
+    ipcRenderer.on('update-remitentes', (event, formattedSenderId) => {
+        remitentesNumber.innerText = `Número de Teléfono: ${formattedSenderId}`;
+    });
+    // Maneja eventos de clic en el botón
+    document.getElementById('goToIndex').addEventListener('click', () => {
+      // Envía un mensaje al proceso principal para que cierre la ventana de remitentes
+      ipcRenderer.send('close-remitentes-window');
+    });
+
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
