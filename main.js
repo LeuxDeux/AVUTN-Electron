@@ -2,7 +2,13 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+/*const setSessionAndUser = require('./app.js')*/
 
+/*function extractFormattedSenderId(senderId) {
+  let formattedSenderId = senderId.replace(/@c\.us$/, "");
+  console.log('-------------------------------', formattedSenderId);
+  return formattedSenderId;
+}*/
 
 let mainWindow; //variable global
 
@@ -96,7 +102,7 @@ ipcMain.on('stop-app', () => {
     if (remitentesWindow) {
       remitentesWindow.close();
     }
-  });
+  });/*
   ipcMain.on('update-remitentes', (event, formattedSenderId) => {
     if (remitentesWindow) {
       remitentesWindow.webContents.send('update-remitentes', formattedSenderId);

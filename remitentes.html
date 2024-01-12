@@ -9,6 +9,7 @@
 <body>
   <h1>Lista de Remitentes</h1>
   <button id="goToIndex">Volver a Principal</button>
+  <button id="remnumber">RemNumber</button>
   <p id="remitentes-number">Número de Teléfono: </p>
 
   <!-- Agrega cualquier otro contenido necesario aquí -->
@@ -17,18 +18,24 @@
     // Importa el módulo ipcRenderer
     const { ipcRenderer } = require("electron");
     // Maneja eventos de actualización de remitentes
+    const { extractFormattedSenderId } = require('./main.js');
     const remitentesNumber = document.getElementById('remitentes-number');
 
-    ipcRenderer.on('update-remitentes', (event, formattedSenderId) => {
-        remitentesNumber.innerText = `Número de Teléfono: ${formattedSenderId}`;
-    });
+    /*ipcRenderer.on('update-remitentes', (event, formattedSenderId) => {
+      remitentesNumber.innerText = `Número de Teléfono: ${formattedSenderId}`;
+    });*/
     // Maneja eventos de clic en el botón
     document.getElementById('goToIndex').addEventListener('click', () => {
       // Envía un mensaje al proceso principal para que cierre la ventana de remitentes
       ipcRenderer.send('close-remitentes-window');
     });
+    document.getElementById('remnumber').addEventListener('click', () => {
+      let formattedSenderId = extractFormattedSenderId(senderId);
+      remitentesNumber.innerText = `Número de Teléfono: ${formattedSenderId}`;
+    });
 
   </script>
   <script src="app.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
