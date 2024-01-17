@@ -102,8 +102,8 @@ ipcMain.on('stop-app', () => {
     if (remitentesWindow) {
       remitentesWindow.close();
     }
-  });/*
-  ipcMain.on('update-remitentes', (event, formattedSenderId) => {
+  });
+  /*ipcMain.on('update-remitentes', (event, formattedSenderId) => {
     if (remitentesWindow) {
       remitentesWindow.webContents.send('update-remitentes', formattedSenderId);
     }

@@ -37,7 +37,7 @@ async function sendToDialogFlow(msg, session, params) { //funcion asincronica co
     };
     const responses = await sessionClient.detectIntent(request); //se utiliza cliente de sesion para enviar solicitud a dialogflow y se espera respuesta, esta se almacena en la var "responses"
     const result = responses[0].queryResult; //se extrae info de resp de dialogflow, se almacena en var "result", tanto el intent como en la respuesta del agente
-    console.log("INTENT EMPAREJADO: ", result.intent.displayName);
+    //console.log("INTENT EMPAREJADO: ", result.intent.displayName);
     let defaultResponses = [];
     if (result.action !== "input.unknown") {
       result.fulfillmentMessages.forEach((element) => {
@@ -52,17 +52,20 @@ async function sendToDialogFlow(msg, session, params) { //funcion asincronica co
       });
     }
     result.fulfillmentMessages = defaultResponses;
-    console.log(JSON.stringify(result,null," "));  
+    //console.log(JSON.stringify(result,null," "));  
     ///////////////////////////////////////////////////
     ///////////////////////////////////////////////////
     ///////////////////////////////////////////////////
-    console.log(`\x1b[36m`,'////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\nIntent Emparejado:', result.intent.displayName, `\x1b[36m`);
-    console.log(`\x1b[36m`, '////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\nTexto Respuesta:', result.fulfillmentText, `\x1b[36m`);
-    console.log(`\x1b[36m`, '////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\nMensaje Entrante:', result.queryText, `\x1b[36m`);
+    /*console.log(`\x1b[36m`,'////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\nIntent Emparejado:', result.intent.displayName, `\x1b[36m`);*/
+    /*console.log(`\x1b[36m`, '////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\nTexto Respuesta:', result.fulfillmentText, `\x1b[36m`);*/
+    /*console.log(`\x1b[36m`, '////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\nMensaje Entrante:', result.queryText, `\x1b[36m`);*/
     ///////////////////////////////////////////////////
     ///////////////////////////////////////////////////
     ///////////////////////////////////////////////////
-    return result; //devuelve obj "result" info procesada de la respuesta de dialogflow
+    return result;
+    
+  
+    //devuelve obj "result" info procesada de la respuesta de dialogflow
     // console.log("se enviara el resultado: ", result);
   } catch (e) {
     console.log("error");

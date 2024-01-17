@@ -8,6 +8,7 @@ const dialogflow=require("./dialogflow");
 const sessionIds = new Map(); //asociar ID diferente para cada numero de wssp
 const responseMappings = require('./responseMappings'); // mapping de modificacion de respuestas
 const mysql = require('mysql2/promise');
+const { session, dialog } = require("electron");
   venom
   .create(
     'Agente Virtual Whatsapp UTN',
@@ -70,10 +71,15 @@ function start(client) {
     setSessionAndUser(message.from); //asocia el num tel del remitente con una sesion (setSessionAndUser), se envia mensaje a dialogflow para procesarlo y se obtiene respuesta, recorre cada respuesta y realiza modificaciones opcionales, por ultimo llama a la funcion sendMessageToWhatsapp para enviar respuestas al remitente
     let session = sessionIds.get(message.from);
     let payload=await dialogflow.sendToDialogFlow(message.body, session); // envia el cuerpo de "message.body" y la sesion de dialogflow utilizando .sendToDialogFlow, la respuesta de dialogflow se almacena en "payload"
-    let responses=payload.fulfillmentMessages; // recupera las respuestas de dialogflow del campo "fulfillmentMessages" en payload y las almacena en "responses"
+    /*let { intent, response, result } = await dialogflow.sendToDialogFlow(message.body, session);*/
+    let responses=payload.fulfillmentMessages; /// recupera las respuestas de dialogflow del campo "fulfillmentMessages" en payload y las almacena en "responses"
     for (const response of responses) { // inicio de blucle que recorra cada respuesta obtenida de dialogflow
       if (response.text && response.text.text.length > 0) { // verificacion de campos vacios
         response.text.text[0] = findCustomResponse(response.text.text[0]); //modificacion de respuestas personalizadas configuradas en el mapping "responseMappings" 
+        console.log('Numero de telefono:', message.from); /* numero de telefono*/
+        console.log('Mensaje recibido: ', message.body);
+        console.log('Respuesta enviada: ', response.text.text[0]);
+        console.log('Intent Emparejado: ', payload.intent.displayName);
       }
        await sendMessageToWhatsapp(client, message, response);
     }
@@ -99,19 +105,33 @@ function sendMessageToWhatsapp(client, message, response) { // cliente whatsapp 
 async function setSessionAndUser(senderId) {
     try {
         const formattedSenderId = senderId.replace(/@c\.us$/, "");
-        console.log('\x1b[35m', 'Mensaje Entrante: ', formattedSenderId);
+        /*console.log('\x1b[35m', 'Mensaje Entrante: ', formattedSenderId);*/
         //console.log(`\x1b[35m`, 'Mensaje Entrante: ', senderId.replace(/@c\.us$/, "")); //imprime por la consola el numero de la persona que envió un mensaje al cliente, x1b[35m para cambiar el color en la consola, .replace para quitar caracteres innecesarios en la devolucion por consola.
         if (!sessionIds.has(senderId)) { //verifica si existe sesion, sino la crea.
             sessionIds.set(senderId, uuid.v1());
            //await insertarNumeroTelefono(senderId.replace(/@c\.us$/, "")); // linea de codigo de prueba para insercion de senderId (numero tel), en tanto una tabla mysql como en un .txt alojado en la carpeta de la aplicacion
-        }
+          }
+             /* function printAllSessions() {
+                console.log("Sesiones almacenadas:");
+                sessionIds.forEach((sessionId, senderId) => {
+                  console.log(`SenderID: ${senderId}, SessionID: ${sessionId}`);
+                });
+              }
+              
+              // Lugar donde quieras imprimir las sesiones, por ejemplo, después de una interacción
+              printAllSessions();*/
+          /* BORRAR PRUEBAS
+          
+          console.log("", result.intent.displayName,);
+          console.log("", result.fulfillmentText,);
+          console.log("", result.result.queryText,);*/
       } catch (error) {
         throw error;
       }
 }
-module.exports = {
+/*module.exports = {
   setSessionAndUser,
-}
+}*/
 /*const fs = require('fs'); // importación de "fs, file system" para trabajar con archivos del sistema operativo
 // codigo no relevante, de prueba de insercion de datos en tablas y archivo local, puede ser cambiado o eliminado para probar otras maneras (importante modificar arriba las llamadas a las siguientes funciones declaradas en este bloque en caso de eliminar este bloque)
 async function insertarNumeroTelefono(numeroTelefono) {
