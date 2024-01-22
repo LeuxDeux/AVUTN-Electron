@@ -8,34 +8,148 @@
 </head>
 <body>
   <h1>Lista de Remitentes</h1>
-  <button id="goToIndex">Volver a Principal</button>
-  <button id="remnumber">RemNumber</button>
-  <p id="remitentes-number">Número de Teléfono: </p>
+  <button id="volver">Volver</button>
+  <label for="numeroInput">Número:</label>
+  <input type="text" id="numeroInput">
 
-  <!-- Agrega cualquier otro contenido necesario aquí -->
+  <label for="fechaInput">Fecha:</label>
+  <input type="date" id="fechaInput">
+
+  <label for="horaInput">Hora:</label>
+  <input type="time" id="horaInput">
+
+  <label for="intentInput">Intent Emparejado:</label>
+  <input type="text" id="intentInput">
+
+  <button onclick="filtrarDatos()">Filtrar</button>
+  
+  <table id="tablaDatos">
+    <thead>
+      <tr>
+        <th>ID Consulta</th>
+        <th>Número Teléfono</th>
+        <th>Mensaje Entrante</th>
+        <th>Respuesta Saliente</th>
+        <th>Intent Emparejado</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody id="tbodyDatos">
+      <!-- Aquí se agregarán las filas dinámicamente -->
+    </tbody>
+  </table>
 
   <script>
+    const mysql = require('mysql2/promise');
+    document.getElementById('volver').addEventListener('click', () => {
+      ipcRenderer.send('close-remitentes-window');
+    });
+    document.addEventListener('DOMContentLoaded', async () => {
+      await mostrarTodasLasConsultas();
+    });
+  async function filtrarDatos() {
+      const numero = document.getElementById('numeroInput').value;
+      const fecha = document.getElementById('fechaInput').value;
+      const hora = document.getElementById('horaInput').value;
+      const intent = document.getElementById('intentInput').value;
+      const dbConfig = {
+        host: 'localhost',
+        user: 'root',
+        password: 'intbotutn2023',
+        database: 'nros_telefono',
+      };
+      const filtros = {
+        numero_telefono: numero,
+        fecha: fecha,
+        hora: hora,
+        intent_emparejado: intent,
+      };
+      const condiciones = Object.entries(filtros)
+        .filter(([_, valor]) => valor.trim() !== '')
+        .map(([campo, valor]) => `${campo} = '${valor}'`)
+        .join(' AND ');
+
+      if (!condiciones) {
+        console.log('Debes proporcionar al menos un criterio de filtro.');
+        return;
+      }
+      try {
+        const connection = await mysql.createConnection(dbConfig);
+        const [rows] = await connection.execute(`SELECT * FROM consultas WHERE ${condiciones}`);
+        const tbody = document.getElementById('tbodyDatos');
+        tbody.innerHTML = '';
+
+        rows.forEach((row) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${row.id_consulta}</td>
+            <td>${row.id_telefono}</td>
+            <td>${row.mensaje_entrante}</td>
+            <td>${row.respuesta_saliente}</td>
+            <td>${row.intent_emparejado}</td>
+            <td>${row.fecha}</td>
+            <td>${row.hora}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        console.log('Datos filtrados con éxito.');
+      } catch (error) {
+        console.error('Error al filtrar datos:', error);
+      }
+      connection.end();
+  }
+  async function mostrarTodasLasConsultas() {
+  const dbConfig = {
+    host: 'localhost',
+    user: 'root',
+    password: 'intbotutn2023',
+    database: 'nros_telefono',
+  };
+  let connection;
+  try {
+    connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute('SELECT * FROM consultas ORDER BY fecha DESC, hora DESC');
+    const tbody = document.getElementById('tbodyDatos');
+    tbody.innerHTML = '';
+
+    rows.forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row.id_consulta}</td>
+        <td>${row.id_telefono}</td>
+        <td>${row.mensaje_entrante}</td>
+        <td>${row.respuesta_saliente}</td>
+        <td>${row.intent_emparejado}</td>
+        <td>${row.fecha}</td>
+        <td>${row.hora}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    console.log('Consultas mostradas con éxito.');
+  } catch (error) {
+    console.error('Error al mostrar consultas:', error);
+  }finally{
+    if(connection){
+      console.log('Conexion cerrada dsps de consulta');
+      connection.end();
+    }
+  }
+}
+// Mostrar todas las consultas al abrir la página
+setInterval(mostrarTodasLasConsultas, 10000);
     // Importa el módulo ipcRenderer
     const { ipcRenderer } = require("electron");
     // Maneja eventos de actualización de remitentes
     const { extractFormattedSenderId } = require('./main.js');
-    const remitentesNumber = document.getElementById('remitentes-number');
 
     /*ipcRenderer.on('update-remitentes', (event, formattedSenderId) => {
       remitentesNumber.innerText = `Número de Teléfono: ${formattedSenderId}`;
     });*/
     // Maneja eventos de clic en el botón
-    document.getElementById('goToIndex').addEventListener('click', () => {
-      // Envía un mensaje al proceso principal para que cierre la ventana de remitentes
-      ipcRenderer.send('close-remitentes-window');
-    });
-    document.getElementById('remnumber').addEventListener('click', () => {
-      let formattedSenderId = extractFormattedSenderId(senderId);
-      remitentesNumber.innerText = `Número de Teléfono: ${formattedSenderId}`;
-    });
-
   </script>
-  <script src="app.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

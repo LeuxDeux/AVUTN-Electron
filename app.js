@@ -8,7 +8,8 @@ const dialogflow=require("./dialogflow");
 const sessionIds = new Map(); //asociar ID diferente para cada numero de wssp
 const responseMappings = require('./responseMappings'); // mapping de modificacion de respuestas
 const mysql = require('mysql2/promise');
-const { session, dialog } = require("electron");
+//const { session, dialog } = require("electron");
+const moment = require('moment');
   venom
   .create(
     'Agente Virtual Whatsapp UTN',
@@ -45,12 +46,12 @@ const { session, dialog } = require("electron");
     console.log(erro);
   });
 
-/*const dbConfig = {
+const dbConfig = {
   host: 'localhost',
   user: 'root',
   password: 'intbotutn2023',
   database: 'nros_telefono',
-};*/
+};
 /*venom // bloque de biblioteca venom-bot, objeto para la creacion de una sesion en whatsapp
   .create({
     session: 'Agente Virtual WhatsApp UTN' 
@@ -70,16 +71,40 @@ function start(client) {
   client.onMessage(async (message) => { // activacion cuando cliente recibe un nuevo mensaje (manejador de eventos)
     setSessionAndUser(message.from); //asocia el num tel del remitente con una sesion (setSessionAndUser), se envia mensaje a dialogflow para procesarlo y se obtiene respuesta, recorre cada respuesta y realiza modificaciones opcionales, por ultimo llama a la funcion sendMessageToWhatsapp para enviar respuestas al remitente
     let session = sessionIds.get(message.from);
+    for (let attempt = 0; attempt < 5; attempt++){
+      if(!message.body || message.body.trim() === ''){
+        if(attempt === 4){
+            console.log('Mensaje vacio despues de 2 intentos no se pudo procesar');
+            console.log('Puedes volver a repetir el mensaje'); ///ejemplo que debe ser usado con un nuevo mapping o respuesta const pred
+            client.sendText(message.from, 'Puedes volver a enviar el mensaje?');
+            return;
+          }else{
+            console.log('Mensaje vacio Reintentando');
+            continue;
+          }
+      }
+    }
     let payload=await dialogflow.sendToDialogFlow(message.body, session); // envia el cuerpo de "message.body" y la sesion de dialogflow utilizando .sendToDialogFlow, la respuesta de dialogflow se almacena en "payload"
     /*let { intent, response, result } = await dialogflow.sendToDialogFlow(message.body, session);*/
     let responses=payload.fulfillmentMessages; /// recupera las respuestas de dialogflow del campo "fulfillmentMessages" en payload y las almacena en "responses"
     for (const response of responses) { // inicio de blucle que recorra cada respuesta obtenida de dialogflow
       if (response.text && response.text.text.length > 0) { // verificacion de campos vacios
         response.text.text[0] = findCustomResponse(response.text.text[0]); //modificacion de respuestas personalizadas configuradas en el mapping "responseMappings" 
-        console.log('Numero de telefono:', message.from); /* numero de telefono*/
-        console.log('Mensaje recibido: ', message.body);
-        console.log('Respuesta enviada: ', response.text.text[0]);
-        console.log('Intent Emparejado: ', payload.intent.displayName);
+        let num = message.from.replace(/@c\.us$/, "");
+        let msnin = message.body;
+        let msnout = response.text.text[0];
+        let intemp = payload.intent.displayName;
+        const currentDateTime = moment();
+        const currentDay = currentDateTime.format('YYYY-MM-DD');
+        const currentHour = currentDateTime.format('HH:mm:ss');
+        console.log('Numero de telefono:', num); /* numero de telefono*/
+        console.log('Mensaje recibido: ', msnin);
+        console.log('Respuesta enviada: ', msnout);
+        console.log('Intent Emparejado: ', intemp);
+        console.log('Dia de la consulta', currentDay);
+        console.log('Hora de la consulta', currentHour);
+        await insertarDatosEnTablas(num, msnin, msnout, intemp);
+        
       }
        await sendMessageToWhatsapp(client, message, response);
     }
@@ -101,34 +126,71 @@ function sendMessageToWhatsapp(client, message, response) { // cliente whatsapp 
         });
     });
 }
+
 //asocia un num tel de remitente con una sesion generada mediante uuid.v1(), verifica si ya existe una sesion para el remitente y la crea si no existe
+
 async function setSessionAndUser(senderId) {
     try {
-        const formattedSenderId = senderId.replace(/@c\.us$/, "");
-        /*console.log('\x1b[35m', 'Mensaje Entrante: ', formattedSenderId);*/
+        //const formattedSenderId = senderId.replace(/@c\.us$/, "");
+        //console.log('\x1b[35m', 'Mensaje Entrante: ', formattedSenderId);
         //console.log(`\x1b[35m`, 'Mensaje Entrante: ', senderId.replace(/@c\.us$/, "")); //imprime por la consola el numero de la persona que envió un mensaje al cliente, x1b[35m para cambiar el color en la consola, .replace para quitar caracteres innecesarios en la devolucion por consola.
         if (!sessionIds.has(senderId)) { //verifica si existe sesion, sino la crea.
             sessionIds.set(senderId, uuid.v1());
            //await insertarNumeroTelefono(senderId.replace(/@c\.us$/, "")); // linea de codigo de prueba para insercion de senderId (numero tel), en tanto una tabla mysql como en un .txt alojado en la carpeta de la aplicacion
           }
-             /* function printAllSessions() {
+                function printAllSessions() {
                 console.log("Sesiones almacenadas:");
                 sessionIds.forEach((sessionId, senderId) => {
                   console.log(`SenderID: ${senderId}, SessionID: ${sessionId}`);
                 });
               }
-              
-              // Lugar donde quieras imprimir las sesiones, por ejemplo, después de una interacción
-              printAllSessions();*/
-          /* BORRAR PRUEBAS
-          
-          console.log("", result.intent.displayName,);
-          console.log("", result.fulfillmentText,);
-          console.log("", result.result.queryText,);*/
+                //printAllSessions();
       } catch (error) {
         throw error;
       }
 }
+async function insertarDatosEnTablas(num, msnin, msnout, intemp) {
+  const connection = await mysql.createConnection(dbConfig);
+  try {
+    const [telefonosRows] = await connection.execute(
+      'INSERT IGNORE INTO telefonos (numero_telefono, cantidad_consultas) VALUES (?, 0)',
+      [num]
+    );
+    // Obtener el ID del número de teléfono
+    const [idTelefonoRow] = await connection.execute(
+      'SELECT id_telefono FROM telefonos WHERE numero_telefono = ?',
+      [num]
+    );
+    const idTelefono = idTelefonoRow[0].id_telefono;
+    // Generar un UUID para la consulta
+    const idConsulta = uuid.v4();
+    //OBtener fecha y hora actual
+    const currentDateTime = moment();
+    const fechaActual = currentDateTime.format('YYYY-MM-DD');
+    const horaActual = currentDateTime.format('HH:mm:ss');
+    // Insertar la consulta asociada al número de teléfono
+    await connection.execute(
+      'INSERT INTO consultas (id_consulta, id_telefono, numero_telefono, mensaje_entrante, respuesta_saliente, intent_emparejado, fecha, hora) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [idConsulta, idTelefono, num, msnin, msnout, intemp, fechaActual, horaActual]
+    );
+    // Incrementar la cantidad de consultas en la tabla de telefonos
+    await connection.execute(
+      'UPDATE telefonos SET cantidad_consultas = cantidad_consultas + 1 WHERE id_telefono = ?',
+      [idTelefono]
+    );
+
+    console.log('Datos insertados con éxito en las tablas.');
+  } catch (error) {
+    console.error('Error al insertar datos en las tablas:', error);
+  } finally {
+    // Cerrar la conexión después de usarla
+    connection.end();
+  }
+}
+
+// ... (resto del código)
+
+// Llamada a la función
 /*module.exports = {
   setSessionAndUser,
 }*/
@@ -169,3 +231,7 @@ async function insertarNumeroTelefono(numeroTelefono) {
     connection.end();
   }
 }*/
+////////////////////////////////////////
+/*
+
+*/

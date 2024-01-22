@@ -76,12 +76,12 @@ ipcMain.on('stop-app', () => {
     
   });
   //////Prueba remitentes.html
-  /*let remitentesWindow;
+  let remitentesWindow;
 
   function createRemitentesWindow() {
     remitentesWindow = new BrowserWindow({
-      width: 600,
-      height: 400,
+      width: 800,
+      height: 600,
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,

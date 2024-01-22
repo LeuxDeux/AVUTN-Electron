@@ -9,7 +9,7 @@
   <img id="qrCode" src="out.png" alt="QR Code">
   <button onclick="startApp()">Start App</button>
   <button onclick="stopApp()">Stop App</button>
-  <!--<button id="openRemitentes">Abrir remitentes</button>-->
+  <button id="openRemitentes">Abrir remitentes</button>
   <script src="index.js"></script>
   <script>
     //funcion que cada 3s recarga la imagen 
@@ -22,6 +22,7 @@
     document.getElementById('openRemitentes').addEventListener('click', () => {
       // Envía un mensaje al proceso principal para que abra la ventana de remitentes
       ipcRenderer.send('open-remitentes-window');
+      
     });
   </script>
 </body>
