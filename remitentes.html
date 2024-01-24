@@ -42,12 +42,14 @@
 
   <script>
     const mysql = require('mysql2/promise');
+    const { remote } =require('electron');
     document.getElementById('volver').addEventListener('click', () => {
       ipcRenderer.send('close-remitentes-window');
     });
     document.addEventListener('DOMContentLoaded', async () => {
       await mostrarTodasLasConsultas();
     });
+    /*
   async function filtrarDatos() {
       const numero = document.getElementById('numeroInput').value;
       const fecha = document.getElementById('fechaInput').value;
@@ -99,7 +101,65 @@
         console.error('Error al filtrar datos:', error);
       }
       connection.end();
+  }*/
+  async function filtrarDatos() {
+  const numero = document.getElementById('numeroInput').value;
+  const fecha = document.getElementById('fechaInput').value;
+  const hora = document.getElementById('horaInput').value;
+  const intent = document.getElementById('intentInput').value;
+  const dbConfig = {
+    host: 'localhost',
+    user: 'root',
+    password: 'intbotutn2023',
+    database: 'nros_telefono',
+  };
+  let connection;
+  const filtros = {
+    numero_telefono: numero,
+    fecha: fecha,
+    hora: hora,
+    intent_emparejado: intent,
+  };
+  const condiciones = Object.entries(filtros)
+    .filter(([_, valor]) => valor.trim() !== '')
+    .map(([campo, valor]) => `${campo} = '${valor}'`)
+    .join(' AND ');
+
+  if (!condiciones) {
+    console.log('Debes proporcionar al menos un criterio de filtro.');
+    return;
   }
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute(`SELECT * FROM consultas WHERE ${condiciones}`);
+    //const tbody = document.getElementById('tbodyDatos');
+    //tbody.innerHTML = '';
+
+    /*rows.forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row.id_consulta}</td>
+        <td>${row.id_telefono}</td>
+        <td>${row.mensaje_entrante}</td>
+        <td>${row.respuesta_saliente}</td>
+        <td>${row.intent_emparejado}</td>
+        <td>${row.fecha}</td>
+        <td>${row.hora}</td>
+      `;
+      tbody.appendChild(tr);
+    });*/
+
+    console.log('Datos filtrados con éxito.');
+
+    // Enviar los datos filtrados a la ventana de filtro
+    ipcRenderer.send('abrir-ventana-filtro', rows);
+  } catch (error) {
+    console.error('Error al filtrar datos:', error);
+  }if(connection){
+    connection.end();
+  }
+}
+
   async function mostrarTodasLasConsultas() {
   const dbConfig = {
     host: 'localhost',

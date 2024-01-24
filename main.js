@@ -108,3 +108,34 @@ ipcMain.on('stop-app', () => {
       remitentesWindow.webContents.send('update-remitentes', formattedSenderId);
     }
   });*/
+  /////////////////////////////////////////////////
+  //Ventana filtro.html
+  let filtroWindow; // Agrega una variable global para la ventana de filtro
+
+function createFiltroWindow(datosFiltrados) {
+  filtroWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
+
+  filtroWindow.loadFile('filtro.html');
+
+  // Enviar datos filtrados a la nueva ventana sin cambiar la URL
+  filtroWindow.webContents.on('did-finish-load', () => {
+    filtroWindow.webContents.send('datosFiltrados', datosFiltrados);
+  });
+
+  filtroWindow.on('closed', function () {
+    filtroWindow = null;
+  });
+}
+
+ipcMain.on('abrir-ventana-filtro', (event, datosFiltrados) => {
+  if (!filtroWindow) {
+    createFiltroWindow(datosFiltrados);
+  }
+});

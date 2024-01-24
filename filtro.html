@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Datos Filtrados</title>
+</head>
+<body>
+  <h1>Datos Filtrados</h1>
+  <table id="tablaDatosFiltrados">
+    <thead>
+      <tr>
+        <th>ID Consulta</th>
+        <th>Número Teléfono</th>
+        <th>Mensaje Entrante</th>
+        <th>Respuesta Saliente</th>
+        <th>Intent Emparejado</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody id="tbodyDatosFiltrados"></tbody>
+  </table>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    ipcRenderer.on('datosFiltrados', (event, datosFiltrados) => {
+      const tbody = document.getElementById('tbodyDatosFiltrados');
+      tbody.innerHTML = '';
+
+      datosFiltrados.forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.id_consulta}</td>
+          <td>${row.id_telefono}</td>
+          <td>${row.mensaje_entrante}</td>
+          <td>${row.respuesta_saliente}</td>
+          <td>${row.intent_emparejado}</td>
+          <td>${row.fecha}</td>
+          <td>${row.hora}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+  </script>
+</body>
+</html>
