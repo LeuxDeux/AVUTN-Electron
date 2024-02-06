@@ -1,19 +1,22 @@
 {
   "name": "whatsappbotprueba",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "main.js",
   "scripts": {
     "start": "electron main.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "electron-builder",
+    "dist": "electron-builder",
     "publish": "electron-builder --publish always"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.7",
     "dialogflow": "^1.2.0",
     "express": "^4.18.2",
+    "firebase-admin": "^12.0.0",
     "fs": "^0.0.1-security",
     "moment": "^2.30.1",
     "mysql2": "^3.6.5",
@@ -23,7 +26,7 @@
   },
   "devDependencies": {
     "electron": "^28.1.2",
-    "electron-builder": "^22.11.7",
+    "electron-builder": "^22.14.13",
     "electron-reload": "^2.0.0-alpha.1"
   },
   "build": {
@@ -32,6 +35,9 @@
     "directories": {
       "output": "dist"
     },
+    "asarUnpack": [
+      "app.js"
+    ],
     "win": {
       "target": "portable"
     },
@@ -40,7 +46,19 @@
     },
     "linux": {
       "target": "AppImage"
-    }
+    },
+    "files": [
+      "main.js",
+      "app.js",
+      "config.js",
+      "dialogflow.js",
+      "responseMappings.js",
+      "index.js",
+      "log.txt",
+      "index.html",
+      "remitentes.html",
+      "filtro.html"
+    ]
   },
   "description": ""
 }

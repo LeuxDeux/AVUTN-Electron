@@ -9,10 +9,7 @@ const sessionClient = new dialogflow.SessionsClient({ //instancia para interactu
   projectId: config.GOOGLE_PROJECT_ID,
   credentials,
 });
-/** IGNORAR
- * Envia una consulta al agente de dialogflow y devuelve el resultado de la consulta
- * @param {string} projectId proyecto usado
- */
+
 //la estructura de la funcion sendToDialogFlow se obtuvo del repositorio en github de venom-bot y dialogflow (npm venom-bot, npm dialogflow), se modificó y adaptó de acuerdo a lo que queria mostrar, en este caso, muestra casi todos los valores interesantes que debemos leer por consola para saber que tipo de información está devolviendo
 async function sendToDialogFlow(msg, session, params) { //funcion asincronica con 3 parametros, mensaje del usuario, identificacion de sesion y params adicionales
   let textToDialogFlow = msg;  //msn del usuario se almacena en esta var
