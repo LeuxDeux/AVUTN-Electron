@@ -123,7 +123,7 @@ function start(client) {
       if(!message.body || message.body.trim() === ''){
         if(attempt === 4){
             console.log('Mensaje vacio despues de 2 intentos no se pudo procesar');
-            console.log('Puedes volver a repetir el mensaje'); ///ejemplo que debe ser usado con un nuevo mapping o respuesta const pred
+            console.log('Puedes volver a repetir el mensaje'); 
             client.sendText(message.from, 'Puedes volver a enviar el mensaje?');
             return;
           }else{
@@ -133,7 +133,6 @@ function start(client) {
       }
     }
     let payload=await dialogflow.sendToDialogFlow(message.body, session); // envia el cuerpo de "message.body" y la sesion de dialogflow utilizando .sendToDialogFlow, la respuesta de dialogflow se almacena en "payload"
-    /*let { intent, response, result } = await dialogflow.sendToDialogFlow(message.body, session);*/
     let responses=payload.fulfillmentMessages; /// recupera las respuestas de dialogflow del campo "fulfillmentMessages" en payload y las almacena en "responses"
     for (const response of responses) { // inicio de blucle que recorra cada respuesta obtenida de dialogflow
       if (response.text && response.text.text.length > 0) { // verificacion de campos vacios
