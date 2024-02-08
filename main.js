@@ -156,11 +156,6 @@ ipcMain.on('stop-app', () => {
       remitentesWindow.close();
     }
   });
-  /*ipcMain.on('update-remitentes', (event, formattedSenderId) => {
-    if (remitentesWindow) {
-      remitentesWindow.webContents.send('update-remitentes', formattedSenderId);
-    }
-  });*/
   /////////////////////////////////////////////////
   //Ventana filtro.html
   let filtroWindow; // Agrega una variable global para la ventana de filtro

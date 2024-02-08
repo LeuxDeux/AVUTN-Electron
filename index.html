@@ -21,11 +21,8 @@
     function reloadImage() { //pruebas con electron
     const timestamp = Date.now();
     let imagePath = "out.png";
-
     // Agrega el timestamp a la ruta
     imagePath += `?timestamp=${timestamp}`;
-
-    // Carga la imagen en el elemento img
     document.getElementById('qrCode').src = imagePath;
   }
   /*function reloadImage() {
@@ -36,8 +33,8 @@
     document.getElementById('openRemitentes').addEventListener('click', () => {
       // Envía un mensaje al proceso principal para que abra la ventana de remitentes
       ipcRenderer.send('open-remitentes-window');
-      
     });
   </script>
 </body>
 </html>
+

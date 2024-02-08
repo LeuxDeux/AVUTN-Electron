@@ -27,7 +27,7 @@
     <thead>
       <tr>
         <th>ID Consulta</th>
-        <th>Número Teléfono</th>
+        <th>ID Teléfono</th>
         <th>Mensaje Entrante</th>
         <th>Respuesta Saliente</th>
         <th>Intent Emparejado</th>
@@ -203,11 +203,6 @@ setInterval(mostrarTodasLasConsultas, 10000);
     const { ipcRenderer } = require("electron");
     // Maneja eventos de actualización de remitentes
     const { extractFormattedSenderId } = require('./main.js');
-
-    /*ipcRenderer.on('update-remitentes', (event, formattedSenderId) => {
-      remitentesNumber.innerText = `Número de Teléfono: ${formattedSenderId}`;
-    });*/
-    // Maneja eventos de clic en el botón
   </script>
   <script src="main.js"></script>
 </body>
