@@ -155,7 +155,7 @@ function start(client) {
       }
        await sendMessageToWhatsapp(client, message, response);
     }
-      
+      start(client);
      });
 }
 //////////////////////////////////////////////////////////////// Fin funcion Start() para mensajes entrantes una vez validada la sesión

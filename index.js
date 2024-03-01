@@ -5,7 +5,6 @@ function startApp() {
   ipcRenderer.on('app-started', () => {
     // Lógica para indicar que la aplicación se inició correctamente
     console.log('App iniciada correctamente');
-    // Puedes actualizar la interfaz de usuario aquí
   });
   ipcRenderer.on('app-error', (event, errorMessage) => {
     // Lógica para manejar errores durante la ejecución de la aplicación
