@@ -119,7 +119,7 @@ function start(client) {
   client.onMessage(async (message) => { // activacion cuando cliente recibe un nuevo mensaje (manejador de eventos)
     setSessionAndUser(message.from); //asocia el num tel del remitente con una sesion (setSessionAndUser), se envia mensaje a dialogflow para procesarlo y se obtiene respuesta, recorre cada respuesta y realiza modificaciones opcionales, por ultimo llama a la funcion sendMessageToWhatsapp para enviar respuestas al remitente
     let session = sessionIds.get(message.from);
-    for (let attempt = 0; attempt < 5; attempt++){
+    /*for (let attempt = 0; attempt < 5; attempt++){
       if(!message.body || message.body.trim() === ''){
         if(attempt === 4){
             console.log('Mensaje vacio despues de 2 intentos no se pudo procesar');
@@ -131,7 +131,7 @@ function start(client) {
             continue;
           }
       }
-    }
+    }*/
     let payload=await dialogflow.sendToDialogFlow(message.body, session); // envia el cuerpo de "message.body" y la sesion de dialogflow utilizando .sendToDialogFlow, la respuesta de dialogflow se almacena en "payload"
     let responses=payload.fulfillmentMessages; /// recupera las respuestas de dialogflow del campo "fulfillmentMessages" en payload y las almacena en "responses"
     for (const response of responses) { // inicio de blucle que recorra cada respuesta obtenida de dialogflow
